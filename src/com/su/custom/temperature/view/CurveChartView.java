@@ -1,5 +1,6 @@
 package com.su.custom.temperature.view;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -315,5 +316,27 @@ public class CurveChartView extends View {
             return 0;
         }
         return y;
+    }
+
+    public void updateData(List<int[]> dataList, List<Integer> colorList) {
+        if (this.dataList == null) {
+            this.dataList = new ArrayList<int[]>();
+        }
+
+        if (dataList != null) {
+            this.dataList.clear();
+            this.dataList.addAll(dataList);
+        }
+
+        if (this.colorList == null) {
+            this.colorList = new ArrayList<Integer>();
+        }
+
+        if (colorList != null) {
+            this.colorList.clear();
+            this.colorList.addAll(colorList);
+        }
+
+        // invalidate();
     }
 }
