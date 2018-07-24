@@ -1,27 +1,58 @@
 package com.su.custom.temperature.view;
 
+import java.util.List;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PathEffect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.su.custom.temperature.R;
 
 public class CurveChartView extends View {
 
-    // 设置画笔变量
-    Paint mPaint1;
+    private static final String TAG = CurveChartView.class.getSimpleName();
+
+    private Context mContext;
+    // 坐标单位
+    private String[] xLabel;
+    private String[] yLabel;
+    // 曲线数据
+    private List<int[]> dataList;
+    private List<Integer> colorList;
+    // 默认边距
+    private int margin = 20;
+    // 距离左边偏移量
+    private int marginX = 30;
+    // 原点坐标
+    private int xPoint;
+    private int yPoint;
+    // X,Y轴的单位长度
+    private int xScale;
+    private int yScale;
+    // 画笔
+    private Paint paintAxes;
+    private Paint paintCoordinate;
+    // 画网格线
+    private Paint paintTable;
+    // 画曲线
+    private Paint paintCurve;
+
+    private int startYOffset = 20;
 
     // 自定义View有四个构造函数
     // 如果View是在Java代码里面new的，则调用第一个构造函数
     public CurveChartView(Context context) {
         super(context);
-
         // 在构造函数里初始化画笔的操作
-        init();
+        init(context);
     }
 
     // 如果View是在.xml里声明的，则调用第二个构造函数
@@ -29,7 +60,7 @@ public class CurveChartView extends View {
     public CurveChartView(Context context, AttributeSet attrs) {
         super(context, attrs);
         typedArraySettings(context, attrs);
-        init();
+        init(context);
 
     }
 
@@ -38,7 +69,7 @@ public class CurveChartView extends View {
     // 如View有style属性时
     public CurveChartView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
     private void typedArraySettings(Context context, AttributeSet attrs) {
@@ -56,40 +87,233 @@ public class CurveChartView extends View {
     }
 
     // 画笔初始化
-    private void init() {
+    private void init(Context context) {
+        if (mContext == null) {
+            this.mContext = context;
+        }
 
-        // 创建画笔
-        mPaint1 = new Paint();
-        // 设置画笔颜色为蓝色
-        mPaint1.setColor(Color.WHITE);
-        // 设置画笔宽度为10px
-        mPaint1.setStrokeWidth(5f);
-        // 设置画笔模式为填充
-        mPaint1.setStyle(Paint.Style.FILL);
+        // 原点坐标
+        xPoint = margin + marginX;
+        yPoint = this.getHeight() - margin;
+        Log.d(TAG, "xPoint = " + xPoint + ", yPoint = " + yPoint);
+        // 缩放
+        xLabel = getXLabel();
+        yLabel = getYLabel();
 
+        xScale = (this.getWidth() - 2 * margin - marginX) / (xLabel.length - 1);
+        yScale = (this.getHeight() - 2 * margin) / (yLabel.length - 1);
+
+        paintAxes = new Paint();
+        paintAxes.setStyle(Paint.Style.STROKE);
+        paintAxes.setAntiAlias(true);
+        paintAxes.setDither(true);
+        paintAxes.setColor(mContext.getResources().getColor(R.color.xy_system));
+        paintAxes.setStrokeWidth(4);
+
+        paintCoordinate = new Paint();
+        paintCoordinate.setStyle(Paint.Style.STROKE);
+        paintCoordinate.setDither(true);
+        paintCoordinate.setAntiAlias(true);
+        paintCoordinate.setColor(mContext.getResources().getColor(R.color.xy_system));
+        paintCoordinate.setTextSize(15);
+
+        paintTable = new Paint();
+        paintTable.setStyle(Paint.Style.STROKE);
+        paintTable.setAntiAlias(true);
+        paintTable.setDither(true);
+        paintTable.setColor(mContext.getResources().getColor(R.color.color4));
+        paintTable.setStrokeWidth(2);
+
+        paintCurve = new Paint();
+        paintCurve.setStyle(Paint.Style.STROKE);
+        paintCurve.setDither(true);
+        paintCurve.setAntiAlias(true);
+        paintCurve.setStrokeWidth(3);
+        PathEffect pathEffect = new CornerPathEffect(25);
+        paintCurve.setPathEffect(pathEffect);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-
         super.onDraw(canvas);
-
-        // 获取传入的padding值
-        final int paddingLeft = getPaddingLeft();
-        final int paddingRight = getPaddingRight();
-        final int paddingTop = getPaddingTop();
-        final int paddingBottom = getPaddingBottom();
-
-        // 获取绘制内容的高度和宽度（考虑了四个方向的padding值）
-        int width = getWidth() - paddingLeft - paddingRight;
-        int height = getHeight() - paddingTop - paddingBottom;
-
-        // 设置圆的半径 = 宽,高最小值的2分之1
-        int r = Math.min(width, height) / 2;
-
-        // 画出圆(蓝色)
-        // 圆心 = 控件的中央,半径 = 宽,高最小值的2分之1
-        canvas.drawCircle(paddingLeft + width / 2, paddingTop + height / 2, r, mPaint1);
+        init(mContext);
+        drawTable(canvas, paintTable);
+        drawAxesLine(canvas, paintAxes);
+        drawCoordinate(canvas, paintCoordinate);
+        drawLine(canvas);
     }
 
+    private String[] getXLabel() {
+        final int X_SIZE = 60;
+        String[] xLabel = new String[X_SIZE];
+        for (int i = 0; i < X_SIZE; i++) {
+            if (i == 0) {
+                xLabel[i] = "30 秒前";
+            } else if (i == X_SIZE / 2) {
+                xLabel[i] = "当前";
+            } else if (i == X_SIZE - 1) {
+                xLabel[i] = "30 秒后";
+            } else {
+                xLabel[i] = "";
+            }
+        }
+
+        return xLabel;
+    }
+
+    private String[] getYLabel() {
+        final int Y_SIZE = 60 - startYOffset;
+        String[] yLabel = new String[Y_SIZE];
+        for (int i = 0; i < Y_SIZE; i++) {
+            switch (i) {
+            case 0:
+                yLabel[i] = String.format("%d °c", i + startYOffset);
+                break;
+            case 19:
+            case 39:
+            case 59:
+                yLabel[i] = String.format("%d °c", i + startYOffset + 1);
+                break;
+            default:
+                yLabel[i] = "";
+                break;
+            }
+        }
+        return yLabel;
+    }
+
+    /**
+     * 绘制坐标轴
+     */
+    private void drawAxesLine(Canvas canvas, Paint paint) {
+        // X
+        canvas.drawLine(xPoint, yPoint, this.getWidth() - margin / 6, yPoint, paint);
+        canvas.drawLine(this.getWidth() - margin / 6, yPoint, this.getWidth() - margin / 2, yPoint - margin / 3, paint);
+        canvas.drawLine(this.getWidth() - margin / 6, yPoint, this.getWidth() - margin / 2, yPoint + margin / 3, paint);
+
+        // Y
+        canvas.drawLine(xPoint, yPoint, xPoint, margin / 6, paint);
+        canvas.drawLine(xPoint, margin / 6, xPoint - margin / 3, margin / 2, paint);
+        canvas.drawLine(xPoint, margin / 6, xPoint + margin / 3, margin / 2, paint);
+    }
+
+    /**
+     * 绘制表格
+     */
+    private void drawTable(Canvas canvas, Paint paint) {
+        Path path = new Path();
+        // 横向线
+        for (int i = 0; (yPoint - i * yScale) >= margin; i++) {
+            switch (i + startYOffset) {
+            case 20:
+            case 25:
+            case 30:
+            case 35:
+            case 40:
+            case 45:
+            case 50:
+            case 55:
+            case 60:
+                int startX = xPoint;
+                int startY = yPoint - i * yScale;
+                int stopX = xPoint + (xLabel.length - 1) * xScale;
+                path.moveTo(startX, startY);
+                path.lineTo(stopX, startY);
+                canvas.drawPath(path, paint);
+                break;
+            default:
+                break;
+            }
+
+        }
+    }
+
+    /**
+     * 绘制刻度
+     */
+    private void drawCoordinate(Canvas canvas, Paint paint) {
+        // X轴坐标
+        for (int i = 0; i <= (xLabel.length - 1); i++) {
+            paint.setTextAlign(Paint.Align.CENTER);
+            int startX = xPoint + i * xScale;
+            canvas.drawText(xLabel[i], startX, this.getHeight() - margin / 6, paint);
+        }
+
+        // Y轴坐标
+        for (int i = 0; i <= (yLabel.length - 1); i++) {
+            paint.setTextAlign(Paint.Align.LEFT);
+            int startY = yPoint - i * yScale;
+            int offsetX;
+            switch (yLabel[i].length()) {
+            case 1:
+                offsetX = 28;
+                break;
+
+            case 2:
+                offsetX = 20;
+                break;
+
+            case 3:
+                offsetX = 12;
+                break;
+
+            case 4:
+                offsetX = 5;
+                break;
+
+            default:
+                offsetX = 0;
+                break;
+            }
+            int offsetY;
+            if (i == 0) {
+                offsetY = 0;
+            } else {
+                offsetY = margin / 5;
+            }
+            // x默认是字符串的左边在屏幕的位置，y默认是字符串是字符串的baseline在屏幕上的位置
+            canvas.drawText(yLabel[i], margin / 4 + offsetX, startY + offsetY, paint);
+        }
+    }
+
+    /**
+     * 绘制曲线
+     */
+    private void drawCurve(Canvas canvas, Paint paint, int[] data, int color) {
+        paint.setColor(mContext.getResources().getColor(color));
+        Path path = new Path();
+        for (int i = 0; i < data.length; i++) {
+            if (i == 0) {
+                path.moveTo(xPoint, toY(data[0]));
+            } else {
+                path.lineTo(xPoint + i * xScale, toY(data[i]));
+            }
+
+            if (i == xLabel.length) {
+                path.lineTo(xPoint + i * xScale, toY(data[i]));
+            }
+        }
+        canvas.drawPath(path, paint);
+    }
+
+    private void drawLine(Canvas canvas) {
+        if (dataList != null && !dataList.isEmpty()) {
+            for (int i = 0; i < dataList.size(); i++) {
+                drawCurve(canvas, paintCurve, dataList.get(i), colorList.get(i));
+            }
+        }
+    }
+
+    /**
+     * 数据按比例转坐标
+     */
+    private float toY(int num) {
+        float y;
+        try {
+            y = yPoint - (num - startYOffset) * yScale;
+        } catch (Exception e) {
+            return 0;
+        }
+        return y;
+    }
 }
