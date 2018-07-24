@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backgroud">#d9d9d9</color>
+    <color name="color2">#666666</color>
+    <color name="color3">#D0D0D0</color>
+    <color name="color4">#F6F6F6</color>
+    <color name="real_line">#ffe000</color>
+    <color name="xy_system">#FFFFFF</color>
+    <color name="color25">#ED5564</color>
+    <color name="color26">#D7D8DC</color>
+    <color name="predict_line">#00FF00</color>
+</resources>
