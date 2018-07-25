@@ -21,6 +21,10 @@ public class CurveChartView extends View {
 
     private static final String TAG = CurveChartView.class.getSimpleName();
 
+    public static final int Y_OFFSET = 20;
+    public static final int X_SIZE = 60;
+    public static final int Y_SIZE = 60 - Y_OFFSET;
+
     public static final int TYPE_REAL = 0;
     public static final int TYPE_PREDICTE = 1;
 
@@ -47,11 +51,9 @@ public class CurveChartView extends View {
     // 画曲线
     private Paint paintCurve;
 
-    private int startYOffset = 20;
-
     // 曲线数据
-    private List<Integer> realData;
-    private List<Integer> pridictData;
+    private List<Float> realData;
+    private List<Float> pridictData;
 
     // 自定义View有四个构造函数
     // 如果View是在Java代码里面new的，则调用第一个构造函数
@@ -151,7 +153,6 @@ public class CurveChartView extends View {
     }
 
     private String[] getXLabel() {
-        final int X_SIZE = 60;
         String[] xLabel = new String[X_SIZE];
         for (int i = 0; i < X_SIZE; i++) {
             if (i == 0) {
@@ -169,17 +170,16 @@ public class CurveChartView extends View {
     }
 
     private String[] getYLabel() {
-        final int Y_SIZE = 60 - startYOffset;
         String[] yLabel = new String[Y_SIZE];
         for (int i = 0; i < Y_SIZE; i++) {
             switch (i) {
             case 0:
-                yLabel[i] = String.format("%d °c", i + startYOffset);
+                yLabel[i] = String.format("%d °c", i + Y_OFFSET);
                 break;
             case 19:
             case 39:
             case 59:
-                yLabel[i] = String.format("%d °c", i + startYOffset + 1);
+                yLabel[i] = String.format("%d °c", i + Y_OFFSET + 1);
                 break;
             default:
                 yLabel[i] = "";
@@ -211,7 +211,7 @@ public class CurveChartView extends View {
         Path path = new Path();
         // 横向线
         for (int i = 0; (yPoint - i * yScale) >= margin; i++) {
-            switch (i + startYOffset) {
+            switch (i + Y_OFFSET) {
             case 20:
             case 25:
             case 30:
@@ -295,7 +295,7 @@ public class CurveChartView extends View {
         }
     }
 
-    private void drawCurve(int type, Canvas canvas, Paint paint, List<Integer> data) {
+    private void drawCurve(int type, Canvas canvas, Paint paint, List<Float> data) {
         switch (type) {
         case TYPE_PREDICTE:
             drawCurve(canvas, paint, data, R.color.predict_line);
@@ -311,19 +311,28 @@ public class CurveChartView extends View {
     /**
      * 绘制曲线
      */
-    private void drawCurve(Canvas canvas, Paint paint, List<Integer> data, int color) {
+    private void drawCurve(Canvas canvas, Paint paint, List<Float> data, int color) {
         paint.setColor(mContext.getResources().getColor(color));
         Path path = new Path();
+        boolean isFist = true;
+
         for (int i = 0; i < data.size(); i++) {
-            if (i == 0) {
-                path.moveTo(xPoint, toY(data.get(0)));
+            float y = toY(data.get(i));
+            float x = xPoint + i * xScale;
+
+            if (y == Y_OFFSET) {
+
             } else {
-                path.lineTo(xPoint + i * xScale, toY(data.get(i)));
+                if (isFist) {
+                    path.moveTo(x, y);
+                    Log.d(TAG, "moveTo x = " + x + ", y = " + y);
+                    isFist = false;
+                } else {
+                    path.lineTo(x, y);
+                    Log.d(TAG, "lineTo x = " + x + ", y = " + y);
+                }
             }
 
-            if (i == xLabel.length) {
-                path.lineTo(xPoint + i * xScale, toY(data.get(i)));
-            }
         }
         canvas.drawPath(path, paint);
     }
@@ -331,42 +340,60 @@ public class CurveChartView extends View {
     /**
      * 数据按比例转坐标
      */
-    private float toY(int num) {
+    private float toY(float num) {
+        if (num == Y_OFFSET) {
+            return Y_OFFSET;
+        }
+
         float y;
         try {
-            y = yPoint - (num - startYOffset) * yScale;
+            y = yPoint - (num - Y_OFFSET) * yScale;
         } catch (Exception e) {
             return 0;
         }
         return y;
     }
 
-    public void updateData(List<Integer> real, List<Integer> predict) {
+    public void updateData(List<Float> real, List<Float> predict) {
         updateRealData(real);
         updatePredictData(predict);
     }
 
-    public void updateRealData(List<Integer> real) {
+    public void updateRealData(List<Float> real) {
         if (realData == null) {
-            realData = new ArrayList<Integer>();
+            realData = new ArrayList<Float>();
         }
 
         if (real != null) {
             realData.clear();
             realData.addAll(real);
         }
+
         invalidate();
     }
 
-    public void updatePredictData(List<Integer> predict) {
+    public void updatePredictData(List<Float> predict) {
         if (pridictData == null) {
-            pridictData = new ArrayList<Integer>();
+            pridictData = new ArrayList<Float>();
         }
 
         if (predict != null) {
             pridictData.clear();
             pridictData.addAll(predict);
         }
+
+        invalidate();
+    }
+
+    public void clearData() {
+        if (pridictData != null) {
+            pridictData.clear();
+        }
+
+        if (realData != null) {
+            realData.clear();
+        }
+
         invalidate();
     }
 }
