@@ -144,7 +144,7 @@ public class CurveChartView extends View {
         paintCurve.setStyle(Paint.Style.STROKE);
         paintCurve.setDither(true);
         paintCurve.setAntiAlias(true);
-        paintCurve.setStrokeWidth(3);
+        paintCurve.setStrokeWidth(6);
         PathEffect pathEffect = new CornerPathEffect(25);
         paintCurve.setPathEffect(pathEffect);
     }
@@ -335,6 +335,8 @@ public class CurveChartView extends View {
         paint.setColor(mContext.getResources().getColor(color));
         Path path = new Path();
         boolean isFist = true;
+        float lastX = 0f;
+        float lastY = 0f;
 
         for (int i = 0; i < data.size(); i++) {
             float y = toY(data.get(i));
@@ -347,12 +349,21 @@ public class CurveChartView extends View {
                     path.moveTo(x, y);
                     Log.d(TAG, "moveTo x = " + x + ", y = " + y);
                     isFist = false;
+
                 } else {
                     path.lineTo(x, y);
                     Log.d(TAG, "lineTo x = " + x + ", y = " + y);
                 }
+
+                lastX = x;
+                lastY = y;
             }
         }
+
+        if (lastX != 0f && lastY != 0f) {
+            canvas.drawCircle(lastX, lastY, 2, paint);
+        }
+
         canvas.drawPath(path, paint);
     }
 
