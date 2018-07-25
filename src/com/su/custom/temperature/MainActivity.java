@@ -33,19 +33,7 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void initValue() {
-        int[] data1 = { 30, 39, 33, 40, 30, 20, 30, 37, 38, 39, 39, 30, 37, 38, 40, 40, 39, 39, 40, 40, 30, 39, 33, 40, 30, 20, 30, 37, 38, 39, 39, 30, 37, 38, 40, 40, 39, 39, 40, 40, 30, 39, 33, 40,
-                30, 20, 30, 37, 38, 39, 39, 30, 37, 38, 40, 40, 39, 39, 40, 40 };
 
-        int[] data2 = { 38, 38, 38, 53, 40, 39, 38, 37, 38, 37, 38, 40 };
-        List<int[]> dataList = new ArrayList<int[]>();
-        dataList.add(data1);
-        dataList.add(data2);
-
-        List<Integer> colorList = new ArrayList<Integer>();
-        colorList.add(R.color.predict_line);
-        colorList.add(R.color.real_line);
-
-        curver_chart_view.updateData(dataList, colorList);
     }
 
     private void initListener() {
@@ -57,14 +45,26 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
         case R.id.btn_real:
-
+            List<Integer> realDatas = new ArrayList<Integer>();
+            for (int i = 0; i < 60; i++) {
+                realDatas.add(getRandomValue());
+            }
+            curver_chart_view.updateRealData(realDatas);
             break;
         case R.id.btn_predictor:
-
+            List<Integer> predictDatas = new ArrayList<Integer>();
+            for (int i = 0; i < 60; i++) {
+                predictDatas.add(getRandomValue());
+            }
+            curver_chart_view.updatePredictData(predictDatas);
             break;
         default:
             break;
         }
     }
 
+    private int getRandomValue() {
+        int num = (int) (Math.random() * 3);
+        return 35 + num;
+    }
 }

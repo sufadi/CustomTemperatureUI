@@ -21,13 +21,14 @@ public class CurveChartView extends View {
 
     private static final String TAG = CurveChartView.class.getSimpleName();
 
+    public static final int TYPE_REAL = 0;
+    public static final int TYPE_PREDICTE = 1;
+
     private Context mContext;
     // 坐标单位
     private String[] xLabel;
     private String[] yLabel;
-    // 曲线数据
-    private List<int[]> dataList;
-    private List<Integer> colorList;
+
     // 默认边距
     private int margin = 20;
     // 距离左边偏移量
@@ -47,6 +48,10 @@ public class CurveChartView extends View {
     private Paint paintCurve;
 
     private int startYOffset = 20;
+
+    // 曲线数据
+    private List<Integer> realData;
+    private List<Integer> pridictData;
 
     // 自定义View有四个构造函数
     // 如果View是在Java代码里面new的，则调用第一个构造函数
@@ -141,7 +146,8 @@ public class CurveChartView extends View {
         drawTable(canvas, paintTable);
         drawAxesLine(canvas, paintAxes);
         drawCoordinate(canvas, paintCoordinate);
-        drawLine(canvas);
+        drawRealCurve(canvas);
+        drawPredictCurve(canvas);
     }
 
     private String[] getXLabel() {
@@ -277,32 +283,49 @@ public class CurveChartView extends View {
         }
     }
 
+    private void drawRealCurve(Canvas canvas) {
+        if (realData != null && !realData.isEmpty()) {
+            drawCurve(TYPE_REAL, canvas, paintCurve, realData);
+        }
+    }
+
+    private void drawPredictCurve(Canvas canvas) {
+        if (pridictData != null && !pridictData.isEmpty()) {
+            drawCurve(TYPE_PREDICTE, canvas, paintCurve, pridictData);
+        }
+    }
+
+    private void drawCurve(int type, Canvas canvas, Paint paint, List<Integer> data) {
+        switch (type) {
+        case TYPE_PREDICTE:
+            drawCurve(canvas, paint, data, R.color.predict_line);
+            break;
+        case TYPE_REAL:
+            drawCurve(canvas, paint, data, R.color.real_line);
+            break;
+        default:
+            break;
+        }
+    }
+
     /**
      * 绘制曲线
      */
-    private void drawCurve(Canvas canvas, Paint paint, int[] data, int color) {
+    private void drawCurve(Canvas canvas, Paint paint, List<Integer> data, int color) {
         paint.setColor(mContext.getResources().getColor(color));
         Path path = new Path();
-        for (int i = 0; i < data.length; i++) {
+        for (int i = 0; i < data.size(); i++) {
             if (i == 0) {
-                path.moveTo(xPoint, toY(data[0]));
+                path.moveTo(xPoint, toY(data.get(0)));
             } else {
-                path.lineTo(xPoint + i * xScale, toY(data[i]));
+                path.lineTo(xPoint + i * xScale, toY(data.get(i)));
             }
 
             if (i == xLabel.length) {
-                path.lineTo(xPoint + i * xScale, toY(data[i]));
+                path.lineTo(xPoint + i * xScale, toY(data.get(i)));
             }
         }
         canvas.drawPath(path, paint);
-    }
-
-    private void drawLine(Canvas canvas) {
-        if (dataList != null && !dataList.isEmpty()) {
-            for (int i = 0; i < dataList.size(); i++) {
-                drawCurve(canvas, paintCurve, dataList.get(i), colorList.get(i));
-            }
-        }
     }
 
     /**
@@ -318,25 +341,32 @@ public class CurveChartView extends View {
         return y;
     }
 
-    public void updateData(List<int[]> dataList, List<Integer> colorList) {
-        if (this.dataList == null) {
-            this.dataList = new ArrayList<int[]>();
+    public void updateData(List<Integer> real, List<Integer> predict) {
+        updateRealData(real);
+        updatePredictData(predict);
+    }
+
+    public void updateRealData(List<Integer> real) {
+        if (realData == null) {
+            realData = new ArrayList<Integer>();
         }
 
-        if (dataList != null) {
-            this.dataList.clear();
-            this.dataList.addAll(dataList);
+        if (real != null) {
+            realData.clear();
+            realData.addAll(real);
+        }
+        invalidate();
+    }
+
+    public void updatePredictData(List<Integer> predict) {
+        if (pridictData == null) {
+            pridictData = new ArrayList<Integer>();
         }
 
-        if (this.colorList == null) {
-            this.colorList = new ArrayList<Integer>();
+        if (predict != null) {
+            pridictData.clear();
+            pridictData.addAll(predict);
         }
-
-        if (colorList != null) {
-            this.colorList.clear();
-            this.colorList.addAll(colorList);
-        }
-
-        // invalidate();
+        invalidate();
     }
 }
