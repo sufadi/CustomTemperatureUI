@@ -35,6 +35,13 @@ public class CurveChartView extends View {
     public static final int TYPE_REAL = 0;
     public static final int TYPE_PREDICTE = 1;
 
+    // 预测时长
+    private int stepValue = 20;
+    // 实际数据
+    private float realValue = 0f;
+    // 预测数据
+    private float predictValue = 0f;
+
     private Context mContext;
     // 坐标单位
     private String[] xLabel;
@@ -54,6 +61,7 @@ public class CurveChartView extends View {
     private Paint paintAxes;
     private Paint paintCoordinate;
     private Paint paintTitle;
+    private Paint paintData;
     // 画网格线
     private Paint paintTable;
     private boolean showXTable = false;
@@ -132,7 +140,7 @@ public class CurveChartView extends View {
         paintCoordinate.setDither(true);
         paintCoordinate.setAntiAlias(true);
         paintCoordinate.setColor(mContext.getResources().getColor(R.color.xy_system));
-        paintCoordinate.setTextSize(25);
+        paintCoordinate.setTextSize(28);
 
         paintTable = new Paint();
         paintTable.setStyle(Paint.Style.STROKE);
@@ -149,12 +157,21 @@ public class CurveChartView extends View {
         PathEffect pathEffect = new CornerPathEffect(25);
         paintCurve.setPathEffect(pathEffect);
 
+        /** 标题的画笔 */
         paintTitle = new Paint();
         paintTitle.setStyle(Paint.Style.STROKE);
         paintTitle.setDither(true);
         paintTitle.setAntiAlias(true);
         paintTitle.setColor(mContext.getResources().getColor(R.color.title_color));
         paintTitle.setTextSize(35);
+
+        /** 数值的实时显示 */
+        paintData = new Paint();
+        paintData.setStyle(Paint.Style.STROKE);
+        paintData.setDither(true);
+        paintData.setAntiAlias(true);
+        paintData.setColor(mContext.getResources().getColor(R.color.white));
+        paintData.setTextSize(25);
     }
 
     @Override
@@ -162,6 +179,7 @@ public class CurveChartView extends View {
         super.onDraw(canvas);
         init(mContext);
         drawTitle(canvas, paintTitle);
+        drawCurrentData(canvas, paintData);
         drawTable(canvas, paintTable);
         drawAxesLine(canvas, paintAxes);
         drawCoordinate(canvas, paintCoordinate);
@@ -208,6 +226,10 @@ public class CurveChartView extends View {
 
     private void drawTitle(Canvas canvas, Paint paint) {
         canvas.drawText("温度变化与预测", xPoint + (X_SIZE / 3) * xScale, yPoint - (Y_SIZE + 2) * yScale, paint);
+    }
+
+    private void drawCurrentData(Canvas canvas, Paint paint) {
+        canvas.drawText(String.format("当前值: %.1f °C %d s后：%.1f °C", realValue, stepValue, predictValue), (float) (xPoint + (X_SIZE / 2 + 1) * xScale), yPoint - (Y_SIZE) * yScale, paint);
     }
 
     /**
@@ -441,5 +463,23 @@ public class CurveChartView extends View {
         }
 
         invalidate();
+    }
+
+    public void updateCurrentData(int step, float real, float predict) {
+        stepValue = step;
+        realValue = real;
+        predictValue = predict;
+    }
+
+    public void updateStep(int step) {
+        stepValue = step;
+    }
+
+    public void updateReal(float real) {
+        realValue = real;
+    }
+
+    public void updatepPredict(float predict) {
+        predictValue = predict;
     }
 }

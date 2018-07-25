@@ -17,7 +17,8 @@ public class MainActivity extends Activity implements OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     // 20 秒后
-    private int predictPeriod = 20 / CurveChartView.X_UINIT;
+    private int predictStep = 20;
+    private int predictPeriod = predictStep / CurveChartView.X_UINIT;
 
     private List<Float> realDatas;
     private List<Float> realDataSource;
@@ -53,6 +54,7 @@ public class MainActivity extends Activity implements OnClickListener {
         predictDatas = new ArrayList<Float>();
         predictDatasSource = new ArrayList<Float>();
 
+        curver_chart_view.updateStep(predictStep);
         reset();
     }
 
@@ -102,6 +104,7 @@ public class MainActivity extends Activity implements OnClickListener {
             Log.d(TAG, "realDatas:" + i + ", index = " + index + ", value = " + realDataSource.get(i));
         }
 
+        curver_chart_view.updateReal(value);
         curver_chart_view.updateRealData(realDatas);
     }
 
@@ -122,6 +125,7 @@ public class MainActivity extends Activity implements OnClickListener {
             Log.d(TAG, "predictData:" + i + ", index = " + index + ", value = " + predictDatasSource.get(i));
         }
 
+        curver_chart_view.updatepPredict(value);
         curver_chart_view.updatePredictData(predictDatas);
     }
 
