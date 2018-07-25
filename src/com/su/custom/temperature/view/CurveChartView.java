@@ -21,9 +21,10 @@ public class CurveChartView extends View {
 
     private static final String TAG = CurveChartView.class.getSimpleName();
 
-    public static final int Y_OFFSET = 20;
+    public static final int Y_START = 20;
     public static final int X_SIZE = 60;
-    public static final int Y_SIZE = 60 - Y_OFFSET;
+    public static final int X_START = X_SIZE / 2;
+    public static final int Y_SIZE = 60 - Y_START;
 
     public static final int TYPE_REAL = 0;
     public static final int TYPE_PREDICTE = 1;
@@ -174,12 +175,12 @@ public class CurveChartView extends View {
         for (int i = 0; i < Y_SIZE; i++) {
             switch (i) {
             case 0:
-                yLabel[i] = String.format("%d °c", i + Y_OFFSET);
+                yLabel[i] = String.format("%d °c", i + Y_START);
                 break;
             case 19:
             case 39:
             case 59:
-                yLabel[i] = String.format("%d °c", i + Y_OFFSET + 1);
+                yLabel[i] = String.format("%d °c", i + Y_START + 1);
                 break;
             default:
                 yLabel[i] = "";
@@ -211,7 +212,7 @@ public class CurveChartView extends View {
         Path path = new Path();
         // 横向线
         for (int i = 0; (yPoint - i * yScale) >= margin; i++) {
-            switch (i + Y_OFFSET) {
+            switch (i + Y_START) {
             case 20:
             case 25:
             case 30:
@@ -320,7 +321,7 @@ public class CurveChartView extends View {
             float y = toY(data.get(i));
             float x = xPoint + i * xScale;
 
-            if (y == Y_OFFSET) {
+            if (y == Y_START) {
 
             } else {
                 if (isFist) {
@@ -332,7 +333,6 @@ public class CurveChartView extends View {
                     Log.d(TAG, "lineTo x = " + x + ", y = " + y);
                 }
             }
-
         }
         canvas.drawPath(path, paint);
     }
@@ -341,13 +341,13 @@ public class CurveChartView extends View {
      * 数据按比例转坐标
      */
     private float toY(float num) {
-        if (num == Y_OFFSET) {
-            return Y_OFFSET;
+        if (num == Y_START) {
+            return Y_START;
         }
 
         float y;
         try {
-            y = yPoint - (num - Y_OFFSET) * yScale;
+            y = yPoint - (num - Y_START) * yScale;
         } catch (Exception e) {
             return 0;
         }

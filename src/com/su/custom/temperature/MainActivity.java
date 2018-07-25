@@ -7,18 +7,27 @@ import com.su.custom.temperature.view.CurveChartView;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class MainActivity extends Activity implements OnClickListener {
 
-    private List<Float> realDatas;
-    private List<Float> predictDatas;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
-    private Button btn_real;
+    // 20 秒后
+    private int predictPeriod = 20;
+
+    private List<Float> realDatas;
+    private List<Float> realDataSource;
+
+    private List<Float> predictDatas;
+    private List<Float> predictDatasSource;
+
+    private Button btn_add;
+    private Button btn_auto;
     private Button btn_clear;
-    private Button btn_predictor;
     private CurveChartView curver_chart_view;
 
     @Override
@@ -31,38 +40,36 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void initView() {
-        btn_real = (Button) findViewById(R.id.btn_real);
+        btn_add = (Button) findViewById(R.id.btn_add);
+        btn_auto = (Button) findViewById(R.id.btn_auto);
         btn_clear = (Button) findViewById(R.id.btn_clear);
-        btn_predictor = (Button) findViewById(R.id.btn_predictor);
         curver_chart_view = (CurveChartView) findViewById(R.id.curver_chart_view);
     }
 
     private void initValue() {
         realDatas = new ArrayList<Float>();
-        for (int i = 0; i < CurveChartView.X_SIZE; i++) {
-            realDatas.add((float) CurveChartView.Y_OFFSET);
-        }
+        realDataSource = new ArrayList<Float>();
 
         predictDatas = new ArrayList<Float>();
-        for (int i = 0; i < CurveChartView.X_SIZE; i++) {
-            predictDatas.add(getRandomValue());
-        }
+        predictDatasSource = new ArrayList<Float>();
+
+        reset();
     }
 
     private void initListener() {
-        btn_real.setOnClickListener(this);
+        btn_add.setOnClickListener(this);
+        btn_auto.setOnClickListener(this);
         btn_clear.setOnClickListener(this);
-        btn_predictor.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-        case R.id.btn_real:
-            addReadDataLine();
+        case R.id.btn_add:
+            addRealDataLine();
+            addPredictDataLine();
             break;
-        case R.id.btn_predictor:
-            curver_chart_view.updatePredictData(predictDatas);
+        case R.id.btn_auto:
             break;
         case R.id.btn_clear:
             clearData();
@@ -77,18 +84,73 @@ public class MainActivity extends Activity implements OnClickListener {
         return (float) (35 + num + 0.5);
     }
 
-    private void addReadDataLine() {
-        int indexStart = CurveChartView.X_SIZE / 2;
-        for (int i = 0; i < CurveChartView.X_SIZE; i++) {
-            if (indexStart == i) {
-                realDatas.set(indexStart, getRandomValue());
-                realDatas.set(indexStart + 1, getRandomValue());
-            }
+    private void addRealDataLine() {
+        Log.d(TAG, "X_START = " + CurveChartView.X_START);
+        int size = realDataSource.size();
+        float value = getRandomValue();
+        if (size == CurveChartView.X_START) {
+            realDataSource.remove(0);
         }
+
+        realDataSource.add(value);
+
+        int j = 0;
+        for (int i = realDataSource.size() - 1; i > 0; i--) {
+            j++;
+            int index = CurveChartView.X_START - j;
+            realDatas.set(CurveChartView.X_START - j, realDataSource.get(i));
+            Log.d(TAG, "realDatas index = " + index + ", value = " + realDataSource.get(i));
+        }
+
         curver_chart_view.updateRealData(realDatas);
     }
 
+    private void addPredictDataLine() {
+        int size = predictDatasSource.size();
+        float value = getRandomValue();
+        final int PREDICT_START_X = CurveChartView.X_START + predictPeriod;
+        if (size == PREDICT_START_X) {
+            predictDatasSource.remove(0);
+        }
+        predictDatasSource.add(value);
+
+        int j = 0;
+        for (int i = predictDatasSource.size() - 1; i > 0; i--) {
+            j++;
+            int index = PREDICT_START_X - j;
+            predictDatas.set(PREDICT_START_X - j, predictDatasSource.get(i));
+            Log.d(TAG, "predictData index = " + index + ", value = " + predictDatasSource.get(i));
+        }
+
+        curver_chart_view.updatePredictData(predictDatas);
+    }
+
+    private void reset() {
+        if (realDataSource != null) {
+            realDataSource.clear();
+        }
+
+        if (realDatas != null) {
+            realDatas.clear();
+        }
+        for (int i = 0; i < CurveChartView.X_SIZE; i++) {
+            realDatas.add((float) CurveChartView.Y_START);
+        }
+
+        if (predictDatasSource != null) {
+            predictDatasSource.clear();
+        }
+
+        if (predictDatas != null) {
+            predictDatas.clear();
+        }
+        for (int i = 0; i < CurveChartView.X_SIZE; i++) {
+            predictDatas.add((float) CurveChartView.Y_START);
+        }
+    }
+
     private void clearData() {
+        reset();
         curver_chart_view.clearData();
     }
 }
