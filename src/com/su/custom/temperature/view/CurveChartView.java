@@ -141,7 +141,7 @@ public class CurveChartView extends View {
         paintCoordinate.setDither(true);
         paintCoordinate.setAntiAlias(true);
         paintCoordinate.setColor(mContext.getResources().getColor(R.color.xy_system));
-        paintCoordinate.setTextSize(28);
+        paintCoordinate.setTextSize(26);
 
         paintTable = new Paint();
         paintTable.setStyle(Paint.Style.STROKE);
@@ -211,12 +211,12 @@ public class CurveChartView extends View {
         for (int i = 0; i < Y_SIZE; i++) {
             switch (i) {
             case 0:
-                yLabel[i] = String.format("%d °C", i + Y_START);
+                yLabel[i] = String.format("%d °C ", i + Y_START);
                 break;
             case 19:
             case 39:
             case 59:
-                yLabel[i] = String.format("%d °C", i + Y_START + 1);
+                yLabel[i] = String.format("%d °C ", i + Y_START + 1);
                 break;
             default:
                 yLabel[i] = "";
