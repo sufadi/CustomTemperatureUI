@@ -17,7 +17,7 @@ public class MainActivity extends Activity implements OnClickListener {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     // 20 秒后
-    private int predictPeriod = 20;
+    private int predictPeriod = 20 / CurveChartView.X_UINIT;
 
     private List<Float> realDatas;
     private List<Float> realDataSource;
@@ -88,18 +88,18 @@ public class MainActivity extends Activity implements OnClickListener {
         Log.d(TAG, "X_START = " + CurveChartView.X_START);
         int size = realDataSource.size();
         float value = getRandomValue();
-        if (size == CurveChartView.X_START) {
+        if (size > CurveChartView.X_START) {
             realDataSource.remove(0);
         }
 
         realDataSource.add(value);
 
         int j = 0;
-        for (int i = realDataSource.size() - 1; i > 0; i--) {
-            j++;
+        for (int i = realDataSource.size() - 1; i >= 0; i--) {
             int index = CurveChartView.X_START - j;
-            realDatas.set(CurveChartView.X_START - j, realDataSource.get(i));
-            Log.d(TAG, "realDatas index = " + index + ", value = " + realDataSource.get(i));
+            j++;
+            realDatas.set(index, realDataSource.get(i));
+            Log.d(TAG, "realDatas:" + i + ", index = " + index + ", value = " + realDataSource.get(i));
         }
 
         curver_chart_view.updateRealData(realDatas);
@@ -109,17 +109,17 @@ public class MainActivity extends Activity implements OnClickListener {
         int size = predictDatasSource.size();
         float value = getRandomValue();
         final int PREDICT_START_X = CurveChartView.X_START + predictPeriod;
-        if (size == PREDICT_START_X) {
+        if (size > PREDICT_START_X) {
             predictDatasSource.remove(0);
         }
         predictDatasSource.add(value);
 
         int j = 0;
-        for (int i = predictDatasSource.size() - 1; i > 0; i--) {
-            j++;
+        for (int i = predictDatasSource.size() - 1; i >= 0; i--) {
             int index = PREDICT_START_X - j;
-            predictDatas.set(PREDICT_START_X - j, predictDatasSource.get(i));
-            Log.d(TAG, "predictData index = " + index + ", value = " + predictDatasSource.get(i));
+            j++;
+            predictDatas.set(index, predictDatasSource.get(i));
+            Log.d(TAG, "predictData:" + i + ", index = " + index + ", value = " + predictDatasSource.get(i));
         }
 
         curver_chart_view.updatePredictData(predictDatas);

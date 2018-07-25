@@ -21,10 +21,16 @@ public class CurveChartView extends View {
 
     private static final String TAG = CurveChartView.class.getSimpleName();
 
+    public static final int REAL_X_SIZE = 60;
+    public static final int REAL_Y_SIZE = 60;
+
+    public static final int Y_UINIT = 1;
+    public static final int X_UINIT = 5;
+
     public static final int Y_START = 20;
-    public static final int X_SIZE = 60;
+    public static final int X_SIZE = REAL_X_SIZE / X_UINIT;
     public static final int X_START = X_SIZE / 2;
-    public static final int Y_SIZE = 60 - Y_START;
+    public static final int Y_SIZE = REAL_Y_SIZE - Y_START;
 
     public static final int TYPE_REAL = 0;
     public static final int TYPE_PREDICTE = 1;
@@ -35,9 +41,9 @@ public class CurveChartView extends View {
     private String[] yLabel;
 
     // 默认边距
-    private int margin = 20;
+    private int margin = 30;
     // 距离左边偏移量
-    private int marginX = 30;
+    private int marginX = 40;
     // 原点坐标
     private int xPoint;
     private int yPoint;
@@ -49,6 +55,7 @@ public class CurveChartView extends View {
     private Paint paintCoordinate;
     // 画网格线
     private Paint paintTable;
+    private boolean showXTable = false;
     // 画曲线
     private Paint paintCurve;
 
@@ -124,7 +131,7 @@ public class CurveChartView extends View {
         paintCoordinate.setDither(true);
         paintCoordinate.setAntiAlias(true);
         paintCoordinate.setColor(mContext.getResources().getColor(R.color.xy_system));
-        paintCoordinate.setTextSize(15);
+        paintCoordinate.setTextSize(22);
 
         paintTable = new Paint();
         paintTable.setStyle(Paint.Style.STROKE);
@@ -234,6 +241,18 @@ public class CurveChartView extends View {
             }
 
         }
+
+        // 纵向线
+        if (showXTable) {
+            for (int i = 1; i * xScale <= (this.getWidth() - margin); i++) {
+                int startX = xPoint + i * xScale;
+                int startY = yPoint;
+                int stopY = yPoint - (yLabel.length - 1) * yScale;
+                path.moveTo(startX, startY);
+                path.lineTo(startX, stopY);
+                canvas.drawPath(path, paint);
+            }
+        }
     }
 
     /**
@@ -322,7 +341,7 @@ public class CurveChartView extends View {
             float x = xPoint + i * xScale;
 
             if (y == Y_START) {
-
+                // do nothing
             } else {
                 if (isFist) {
                     path.moveTo(x, y);
