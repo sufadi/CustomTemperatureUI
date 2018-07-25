@@ -7,6 +7,6 @@
     <color name="real_line">#ffe000</color>
     <color name="xy_system">#FFFFFF</color>
     <color name="color25">#ED5564</color>
-    <color name="color26">#D7D8DC</color>
+    <color name="title_color">#5A9BD5</color>
     <color name="predict_line">#00FF00</color>
 </resources>

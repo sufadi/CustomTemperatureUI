@@ -41,9 +41,9 @@ public class CurveChartView extends View {
     private String[] yLabel;
 
     // 默认边距
-    private int margin = 30;
+    private int margin = 50;
     // 距离左边偏移量
-    private int marginX = 40;
+    private int marginX = 30;
     // 原点坐标
     private int xPoint;
     private int yPoint;
@@ -53,6 +53,7 @@ public class CurveChartView extends View {
     // 画笔
     private Paint paintAxes;
     private Paint paintCoordinate;
+    private Paint paintTitle;
     // 画网格线
     private Paint paintTable;
     private boolean showXTable = false;
@@ -131,7 +132,7 @@ public class CurveChartView extends View {
         paintCoordinate.setDither(true);
         paintCoordinate.setAntiAlias(true);
         paintCoordinate.setColor(mContext.getResources().getColor(R.color.xy_system));
-        paintCoordinate.setTextSize(22);
+        paintCoordinate.setTextSize(25);
 
         paintTable = new Paint();
         paintTable.setStyle(Paint.Style.STROKE);
@@ -147,12 +148,20 @@ public class CurveChartView extends View {
         paintCurve.setStrokeWidth(6);
         PathEffect pathEffect = new CornerPathEffect(25);
         paintCurve.setPathEffect(pathEffect);
+
+        paintTitle = new Paint();
+        paintTitle.setStyle(Paint.Style.STROKE);
+        paintTitle.setDither(true);
+        paintTitle.setAntiAlias(true);
+        paintTitle.setColor(mContext.getResources().getColor(R.color.title_color));
+        paintTitle.setTextSize(35);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         init(mContext);
+        drawTitle(canvas, paintTitle);
         drawTable(canvas, paintTable);
         drawAxesLine(canvas, paintAxes);
         drawCoordinate(canvas, paintCoordinate);
@@ -182,12 +191,12 @@ public class CurveChartView extends View {
         for (int i = 0; i < Y_SIZE; i++) {
             switch (i) {
             case 0:
-                yLabel[i] = String.format("%d °c", i + Y_START);
+                yLabel[i] = String.format("%d °C", i + Y_START);
                 break;
             case 19:
             case 39:
             case 59:
-                yLabel[i] = String.format("%d °c", i + Y_START + 1);
+                yLabel[i] = String.format("%d °C", i + Y_START + 1);
                 break;
             default:
                 yLabel[i] = "";
@@ -197,17 +206,23 @@ public class CurveChartView extends View {
         return yLabel;
     }
 
+    private void drawTitle(Canvas canvas, Paint paint) {
+        canvas.drawText("温度变化与预测", xPoint + (X_SIZE / 3) * xScale, yPoint - (Y_SIZE + 2) * yScale, paint);
+    }
+
     /**
      * 绘制坐标轴
      */
     private void drawAxesLine(Canvas canvas, Paint paint) {
-        // X
+        // X 的坐标轴边
         canvas.drawLine(xPoint, yPoint, this.getWidth() - margin / 6, yPoint, paint);
+        // X 的箭头
         canvas.drawLine(this.getWidth() - margin / 6, yPoint, this.getWidth() - margin / 2, yPoint - margin / 3, paint);
         canvas.drawLine(this.getWidth() - margin / 6, yPoint, this.getWidth() - margin / 2, yPoint + margin / 3, paint);
 
-        // Y
+        // Y 的坐标轴边
         canvas.drawLine(xPoint, yPoint, xPoint, margin / 6, paint);
+        // Y 的箭头
         canvas.drawLine(xPoint, margin / 6, xPoint - margin / 3, margin / 2, paint);
         canvas.drawLine(xPoint, margin / 6, xPoint + margin / 3, margin / 2, paint);
     }
@@ -220,15 +235,15 @@ public class CurveChartView extends View {
         // 横向线
         for (int i = 0; (yPoint - i * yScale) >= margin; i++) {
             switch (i + Y_START) {
-            case 20:
-            case 25:
-            case 30:
-            case 35:
-            case 40:
-            case 45:
-            case 50:
-            case 55:
-            case 60:
+            case 19:
+            case 24:
+            case 29:
+            case 34:
+            case 39:
+            case 44:
+            case 49:
+            case 54:
+            case 59:
                 int startX = xPoint;
                 int startY = yPoint - i * yScale;
                 int stopX = xPoint + (xLabel.length - 1) * xScale;
@@ -333,6 +348,7 @@ public class CurveChartView extends View {
      */
     private void drawCurve(Canvas canvas, Paint paint, List<Float> data, int color) {
         paint.setColor(mContext.getResources().getColor(color));
+        paint.setAntiAlias(true);// 抗锯齿
         Path path = new Path();
         boolean isFist = true;
         float lastX = 0f;
