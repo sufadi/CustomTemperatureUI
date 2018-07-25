@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
 import android.graphics.Paint;
+import android.graphics.Paint.FontMetrics;
 import android.graphics.Path;
 import android.graphics.PathEffect;
 import android.util.AttributeSet;
@@ -163,7 +164,7 @@ public class CurveChartView extends View {
         paintTitle.setDither(true);
         paintTitle.setAntiAlias(true);
         paintTitle.setColor(mContext.getResources().getColor(R.color.title_color));
-        paintTitle.setTextSize(35);
+        paintTitle.setTextSize(38);
 
         /** 数值的实时显示 */
         paintData = new Paint();
@@ -171,7 +172,8 @@ public class CurveChartView extends View {
         paintData.setDither(true);
         paintData.setAntiAlias(true);
         paintData.setColor(mContext.getResources().getColor(R.color.white));
-        paintData.setTextSize(25);
+        paintData.setTextSize(28);
+        paintData.setTextAlign(Paint.Align.LEFT);
     }
 
     @Override
@@ -225,11 +227,17 @@ public class CurveChartView extends View {
     }
 
     private void drawTitle(Canvas canvas, Paint paint) {
-        canvas.drawText("温度变化与预测", xPoint + (X_SIZE / 3) * xScale, yPoint - (Y_SIZE + 2) * yScale, paint);
+        String result = "温度变化与预测";
+        float width = paint.measureText(result);
+        FontMetrics fontMetrics = paint.getFontMetrics();
+        float top = Math.abs(fontMetrics.top);
+        canvas.drawText(result, (this.getWidth() - width) / 2, top, paint);
     }
 
     private void drawCurrentData(Canvas canvas, Paint paint) {
-        canvas.drawText(String.format("当前值: %.1f °C %d s后：%.1f °C", realValue, stepValue, predictValue), (float) (xPoint + (X_SIZE / 2 + 1) * xScale), yPoint - (Y_SIZE) * yScale, paint);
+        String result = String.format("当前值: %.1f °C %d s后：%.1f °C", realValue, stepValue, predictValue);
+        float width = paint.measureText(result);
+        canvas.drawText(result, this.getWidth() - (width + 20), yPoint - (Y_SIZE) * yScale, paint);
     }
 
     /**
